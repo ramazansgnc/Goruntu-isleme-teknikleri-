@@ -1,0 +1,54 @@
+res = imread('hip.bmp');
+
+% Otomatik eşikleme için histogramı hesaplama
+histogram = imhist(res);
+
+% Tüm piksel değerlerini tutacak bir dizi 
+pixelDegeri = (0:255)';
+
+% Histogramı kullanarak arka plan ve nesne histogramlarını hesaplar
+arkaplanHist = sum(histogram(1:128)); % Histogramın ilk 128 eleman toplamı
+nesneHist = sum(histogram(129:end)); %Histogramın 129 ve sonrakilerin toplamı
+
+% Arka plan ve nesne piksel değerlerini hesapla
+arkaplanPixel = sum(histogram(1:128) .* pixelDegeri(1:128)) / arkaplanHist;
+nesnePixel = sum(histogram(129:end) .* pixelDegeri(129:end)) / nesneHist;
+
+% Eşik değeri hesapla
+esik = (arkaplanPixel + nesnePixel) / 2;
+
+% Eşikleme işlemini uygula esikten büyükler 1, küçükler 0
+ikiliRes = res > esik;
+
+% Z8 yapısal elemanı tanımla 3x3 boyutunda eroz. ve dila. için komşuluk ilişkisi
+z8eleman = [1 1 1; 1 1 1; 1 1 1];
+
+% Erosion işlemini gerçekleştirir
+erosionRes = ikiliRes;
+for i = 2:size(ikiliRes, 1)-1
+    for j = 2:size(ikiliRes, 2)-1
+        if all(all(ikiliRes(i-1:i+1, j-1:j+1) & z8eleman))
+            erosionRes(i, j) = 1;
+        else
+            erosionRes(i, j) = 0;
+        end
+    end
+end
+
+% Dilation işlemini gerçekleştirir
+dilationRes = erosionRes;
+for i = 2:size(erosionRes, 1)-1
+    for j = 2:size(erosionRes, 2)-1
+        if any(any(erosionRes(i-1:i+1, j-1:j+1) & z8eleman))
+            dilationRes(i, j) = 1;
+        else
+            dilationRes(i, j) = 0;
+        end
+    end
+end
+
+
+subplot(2,2,1), imshow(res), title('Orjinal Görüntü');
+subplot(2,2,2), imshow(ikiliRes ), title('Otomatik Eşikleme');
+subplot(2,2,3), imshow(erosionRes ), title('Erosion');
+subplot(2,2,4), imshow(dilationRes), title('Dilation');
