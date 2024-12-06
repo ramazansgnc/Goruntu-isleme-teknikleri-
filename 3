@@ -1,0 +1,26 @@
+I = imread('prosthesis_noise.bmp');
+
+% Fourier dönüşümü
+F = fft2(I);
+
+% Fourier dönüşümünü merkezleme (0,0) noktası merkezde olacak şekilde kaydırma
+Fc = fftshift(F);
+
+% Filtre boyutu belirleme ve filtre oluşturma
+[N, M] = size(F);  % Fourier dönüşümünün boyutunu alır
+[X, Y] = meshgrid(1:M, 1:N);  % X ve Y matrislerini oluşturur
+D = sqrt((X-M/2).^2 + (Y-N/2).^2);  % Her bir pikselin merkezden uzaklığını hesaplar
+D0 = 15; % yarıçap
+
+% Gaussian düşük geçiren filtre tanımı
+gaussian = exp(-(D.^2)/(2*(D0^2))); % Filtre merkezine yakın olanları korurken azaltır
+
+% Filtreleri uygulama
+gaussian = gaussian .* Fc;
+
+% Ters Fourier dönüşümü, Fourier dönüşümündeki resmi tekrar orijinal zaman alanına dönüştürme
+gaussian = ifft2(ifftshift(gaussian));
+
+figure;
+subplot(1,2,1); imshow(I); title('Orjinal Resim');
+subplot(1,2,2); imshow(abs(gaussian),[]); title('Gaussian Filtreli Resim');
