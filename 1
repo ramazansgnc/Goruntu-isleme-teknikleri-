@@ -1,0 +1,41 @@
+res = imread('spine.bmp');
+
+[m, n] = size(res);
+
+
+% Histogram hesaplama
+hist = zeros(256, 1);
+for i = 1:m
+    for j = 1:n
+        piksel_degeri = res(i, j) + 1;
+        hist(piksel_degeri) = hist(piksel_degeri) + 1;
+    end
+end
+
+% Kumulatif histogram hesaplama
+kum_hist = zeros(256, 1);
+kum_hist(1) = hist(1);
+for i = 2:256
+    kum_hist(i) = kum_hist(i-1) + hist(i);
+end
+
+% Normalizasyon
+kum_hist_norm = kum_hist / (m * n);
+
+% Eşitleme işlemi
+esit_res = zeros(m, n);
+for i = 1:m
+    for j = 1:n
+        piksel_degeri =res(i, j) + 1;
+        esit_res(i, j) = round(kum_hist_norm(piksel_degeri) * 255);
+    end
+end
+
+
+figure;
+subplot(1, 2, 1);
+imshow(res);
+title('Orijinal Görüntü');
+subplot(1, 2, 2);
+imshow(uint8(esit_res));
+title('Eşitlenmiş Görüntü');
