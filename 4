@@ -1,0 +1,32 @@
+res = imread('prosthesis_salt_pepper.bmp');
+
+% Görüntü boyutlarını al
+[yukseklik, genislik] = size(res);
+
+% Median süzgeci için filtre boyutu
+filtreboyut = 3;
+
+% Temizlenmiş görüntü için boş bir matris 
+filtreli_res = zeros(yukseklik, genislik);
+
+% Median süzgeci uygulanması
+for i = 2:(yukseklik-1)
+    for j = 2:(genislik-1)
+        % Komşu pikselleri alındı
+        komsuPiks = res((i-1):(i+1), (j-1):(j+1));
+        
+        % Komşu pikselleri sırala ve ortanca değeri alındı
+        medianDeger = median(komsuPiks(:));
+        
+        % Temizlenmiş görüntüye median değeri atandı
+        filtreli_res(i, j) = medianDeger;
+    end
+end
+
+figure;
+subplot(1, 2, 1);
+imshow(res);
+title('Orjinal Görüntü');
+subplot(1, 2, 2);
+imshow(uint8(filtreli_res));
+title('Median Süzgeçli Görüntü');
